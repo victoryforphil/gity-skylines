@@ -24,8 +24,8 @@ WORKDIR /workspaces/gity-skylines
 # Copy package files for better layer caching
 COPY github-city-generator/package.json github-city-generator/bun.lock* ./github-city-generator/
 
-# Install dependencies using the vscode user
-USER vscode
-RUN /home/vscode/.bun/bin/bun install --cwd github-city-generator
+# Install bun globally so it's available for all users
+RUN cp /root/.bun/bin/bun /usr/local/bin/bun && chmod +x /usr/local/bin/bun
 
-USER root
+# Pre-install dependencies (will be run as root, then the vscode user can use them)
+RUN cd github-city-generator && bun install
