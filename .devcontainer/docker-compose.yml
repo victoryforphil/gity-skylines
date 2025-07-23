@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    ports:
+      - "5173:5173"
+      - "4173:4173"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge
