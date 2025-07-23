@@ -49,23 +49,42 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: github-city-generator:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Test production Docker image
         run: |
+          # Verify the image was built
+          docker images github-city-generator:test
+          
           # Start the container in the background
+          echo "Starting container..."
           docker run -d --name test-container -p 8080:80 github-city-generator:test
           
-          # Wait for the container to start
-          sleep 5
+          # Wait for the container to start and nginx to be ready
+          echo "Waiting for container to start..."
+          sleep 10
+          
+          # Check container status
+          docker ps -a --filter name=test-container
+          docker logs test-container
           
           # Test that the container is running and serving content
-          curl -f http://localhost:8080/ || exit 1
+          echo "Testing HTTP endpoints..."
+          curl -f -v http://localhost:8080/ || (echo "Failed to fetch root page" && exit 1)
           
           # Check that static assets are being served
-          curl -f http://localhost:8080/index.html || exit 1
+          curl -f -v http://localhost:8080/index.html || (echo "Failed to fetch index.html" && exit 1)
+          
+          # Check that we get a proper HTML response
+          if ! curl -s http://localhost:8080/ | grep -q "<html"; then
+            echo "Response doesn't contain HTML content"
+            exit 1
+          fi
+          
+          echo "All tests passed!"
           
           # Stop and remove the container
           docker stop test-container

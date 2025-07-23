@@ -81,6 +81,16 @@ fi
 
 echo "✅ GitHub Actions workflow looks good"
 
+# Test 5: Test Docker build if Docker is available
+echo "📋 Testing Docker build (if available)..."
+if command -v docker &> /dev/null; then
+    echo "🐳 Docker is available, running build test..."
+    ./test-docker-local.sh
+else
+    echo "ℹ️  Docker not available, skipping build test"
+    echo "   Run ./test-docker-local.sh when Docker is available"
+fi
+
 echo ""
 echo "🎉 All Docker and CI/CD configurations are valid!"
 echo ""
@@ -89,5 +99,6 @@ echo "   ✅ Production Dockerfile configured"
 echo "   ✅ nginx.conf for serving static files"
 echo "   ✅ Dev container fixed and configured"
 echo "   ✅ GitHub Actions workflow for testing"
+echo "   ✅ Local Docker test script available"
 echo ""
 echo "🚀 Ready for deployment!"

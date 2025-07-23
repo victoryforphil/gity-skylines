@@ -49,11 +49,17 @@ These tests run automatically on:
 Run the comprehensive test suite locally:
 
 ```bash
-# Test the build process
+# Test the local build process
 ./test-build.sh
+
+# Test production build process
+./test-production-build.sh
 
 # Test Docker and CI/CD configurations
 ./test-docker.sh
+
+# Test Docker build locally (requires Docker)
+./test-docker-local.sh
 ```
 
 ## 🐳 Docker
