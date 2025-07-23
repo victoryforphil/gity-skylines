@@ -100,7 +100,7 @@ export class GitHubApiClient {
     maxPages: number = 1
   ): Promise<GitHubCommit[]> {
     const allCommits: GitHubCommit[] = [];
-    let currentPage = params.page || 1;
+    const currentPage = params.page || 1;
     const perPage = params.per_page || 30;
 
     for (let page = 0; page < maxPages; page++) {
@@ -201,7 +201,7 @@ export function useGitHubCommits(
     } finally {
       setLoading(false);
     }
-  }, [owner, repo, token, enabled, JSON.stringify(params)]);
+  }, [owner, repo, token, enabled, params]);
 
   useEffect(() => {
     fetchCommits();

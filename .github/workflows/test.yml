@@ -1,0 +1,110 @@
+name: Test Dev Container and Docker Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-devcontainer:
+    runs-on: ubuntu-latest
+    name: Test Dev Container Build
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and run dev container task
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/${{ github.repository }}/devcontainer
+          cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
+          push: never
+          runCmd: |
+            # Test that bun is available
+            bun --version
+            # Test that we can install dependencies
+            cd github-city-generator
+            bun install
+            # Test that we can build the project
+            bun run build
+            # Test that we can lint the project
+            bun run lint
+
+  test-production-docker:
+    runs-on: ubuntu-latest
+    name: Test Production Docker Build
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: github-city-generator:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test production Docker image
+        run: |
+          # Start the container in the background
+          docker run -d --name test-container -p 8080:80 github-city-generator:test
+          
+          # Wait for the container to start
+          sleep 5
+          
+          # Test that the container is running and serving content
+          curl -f http://localhost:8080/ || exit 1
+          
+          # Check that static assets are being served
+          curl -f http://localhost:8080/index.html || exit 1
+          
+          # Stop and remove the container
+          docker stop test-container
+          docker rm test-container
+
+  test-local-build:
+    runs-on: ubuntu-latest
+    name: Test Local Build with Bun
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: |
+          cd github-city-generator
+          bun install --frozen-lockfile
+
+      - name: Run linting
+        run: |
+          cd github-city-generator
+          bun run lint
+
+      - name: Build application
+        run: |
+          cd github-city-generator
+          bun run build
+
+      - name: Test build output
+        run: |
+          cd github-city-generator
+          # Check that dist directory was created
+          test -d dist
+          # Check that index.html exists
+          test -f dist/index.html
+          # Check that assets were generated
+          test -d dist/assets
