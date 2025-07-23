@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { Scene } from './components/Scene'
+import GitHubCommitsExample from './components/GitHubCommitsExample'
 import './App.css'
 
 function App() {
+  const [showCommitsExample, setShowCommitsExample] = useState(false);
   return (
     <div className="w-full h-screen bg-gray-900 relative">
       {/* Header UI */}
@@ -10,6 +13,12 @@ function App() {
         <p className="text-sm opacity-75 mb-3">
           A 3D visualization of code repositories as cities
         </p>
+        <button
+          onClick={() => setShowCommitsExample(!showCommitsExample)}
+          className="mb-3 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors"
+        >
+          {showCommitsExample ? 'Show 3D Scene' : 'Test GitHub API'}
+        </button>
         <div className="text-xs space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded"></div>
@@ -40,7 +49,7 @@ function App() {
         </div>
       </div>
 
-      <Scene />
+      {showCommitsExample ? <GitHubCommitsExample /> : <Scene />}
     </div>
   )
 }
